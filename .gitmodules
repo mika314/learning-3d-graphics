@@ -1,0 +1,12 @@
+[submodule "bgfx/bx"]
+	path = bgfx/bx
+	url = https://github.com/bkaradzic/bx.git
+[submodule "bgfx/bimg"]
+	path = bgfx/bimg
+	url = https://github.com/bkaradzic/bimg.git
+[submodule "bgfx/bgfx"]
+	path = bgfx/bgfx
+	url = https://github.com/bkaradzic/bgfx.git
+[submodule "bgfx/GENie"]
+	path = bgfx/GENie
+	url = https://github.com/bkaradzic/GENie.git
