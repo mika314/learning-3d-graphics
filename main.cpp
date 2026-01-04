@@ -1,4 +1,4 @@
-#include "example-cubes.hpp"
+#include "hello-triangle.hpp"
 #include <bgfx/platform.h>
 #include <bx/readerwriter.h>
 #include <sdlpp/sdlpp.hpp>
@@ -30,9 +30,7 @@ auto main(int argc, char **argv) -> int
 
   bgfx::renderFrame();
 
-  auto cubes = ExampleCubes{window};
-
-  cubes.init(argc, argv, m_width, m_height);
+  auto cubes = HelloTriangle{window, m_width, m_height};
 
   auto done = false;
   auto e = sdl::EventHandler{};
@@ -45,6 +43,5 @@ auto main(int argc, char **argv) -> int
     // bgfx::renderFrame();
   }
 
-  cubes.shutdown();
   return 0;
 }
