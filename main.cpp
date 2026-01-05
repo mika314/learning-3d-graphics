@@ -2,6 +2,7 @@
 #include "get-natives.hpp"
 #include "hello-triangle.hpp"
 #include "shaders-tutorial.hpp"
+#include "textures.hpp"
 #include <bgfx/platform.h>
 #include <bx/readerwriter.h>
 #include <sdlpp/sdlpp.hpp>
@@ -42,7 +43,7 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = ShadersTutorial{window, width, height};
+    auto example = Textures{window, width, height};
     auto done = false;
     auto e = sdl::EventHandler{};
     e.quit = [&done](const SDL_QuitEvent &) { done = true; };
