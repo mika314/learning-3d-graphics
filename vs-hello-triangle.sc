@@ -1,5 +1,3 @@
-#include <bgfx_shader.sh>
-
 $input a_position
 
 void main()

@@ -33,18 +33,6 @@ static auto triList = std::array<uint16_t, 4>{0, 1, 2, 0};
 HelloTriangle::HelloTriangle(sdl::Window &aWindow, int aWidth, int aHeight)
   : window(aWindow), width(aWidth), height(aHeight)
 {
-  bgfx::init([this]() {
-    auto r = bgfx::Init{};
-    r.type = bgfx::RendererType::OpenGL; // bgfx::RendererType::Vulkan
-    r.vendorId = BGFX_PCI_ID_NONE;
-    r.platformData.nwh = getNativeWindowHandle(window);
-    r.platformData.ndt = getNativeDisplayHandle(window);
-    r.resolution.width = width;
-    r.resolution.height = height;
-    r.resolution.reset = BGFX_RESET_VSYNC;
-    return r;
-  }());
-  bgfx::setDebug(BGFX_DEBUG_NONE);
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
   program = loadProgram("vs-hello-triangle", "fs-hello-triangle");
   vbh1 = bgfx::createVertexBuffer(
@@ -61,7 +49,6 @@ HelloTriangle::~HelloTriangle()
   bgfx::destroy(vbh1);
   bgfx::destroy(vbh2);
   bgfx::destroy(program);
-  bgfx::shutdown();
 }
 
 auto HelloTriangle::update() -> void
@@ -71,7 +58,7 @@ auto HelloTriangle::update() -> void
     bgfx::setVertexBuffer(0, vbh1);
     bgfx::setState(BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | BGFX_STATE_WRITE_A |
                    BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW |
-                   BGFX_STATE_MSAA | BGFX_STATE_PT_LINESTRIP);
+                   BGFX_STATE_MSAA | BGFX_STATE_PT_TRISTRIP);
     bgfx::submit(0, program);
   }
   {

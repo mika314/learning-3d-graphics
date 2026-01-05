@@ -1,4 +1,5 @@
-#include "hello-triangle.hpp"
+#include "get-natives.hpp"
+#include "shaders-tutorial.hpp"
 #include <bgfx/platform.h>
 #include <bx/readerwriter.h>
 #include <sdlpp/sdlpp.hpp>
@@ -15,33 +16,41 @@
 #undef None
 #endif // defined(None)
 
-//#include <bx/mutex.h>
-//#include <bx/thread.h>
-//#include <bx/handlealloc.h>
-
-auto main(int argc, char **argv) -> int
+auto main(int /*argc*/, char ** /*argv*/) -> int
 {
   auto init = sdl::Init(SDL_INIT_VIDEO);
-  int m_width = 1280;
-  int m_height = 720;
+  int width = 1280;
+  int height = 720;
 
   auto window = sdl::Window{
-    "bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_width, m_height, SDL_WINDOW_SHOWN};
+    "bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN};
 
   bgfx::renderFrame();
 
-  auto cubes = HelloTriangle{window, m_width, m_height};
-
-  auto done = false;
-  auto e = sdl::EventHandler{};
-  e.quit = [&done](const SDL_QuitEvent &) { done = true; };
-  while (!done)
+  bgfx::init([&]() {
+    auto r = bgfx::Init{};
+    r.type = bgfx::RendererType::OpenGL; // bgfx::RendererType::Vulkan
+    r.vendorId = BGFX_PCI_ID_NONE;
+    r.platformData.nwh = getNativeWindowHandle(window);
+    r.platformData.ndt = getNativeDisplayHandle(window);
+    r.resolution.width = width;
+    r.resolution.height = height;
+    r.resolution.reset = BGFX_RESET_VSYNC;
+    return r;
+  }());
+  bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    while (e.poll()) {}
-
-    cubes.update();
-    // bgfx::renderFrame();
+    auto example = ShadersTutorial{window, width, height};
+    auto done = false;
+    auto e = sdl::EventHandler{};
+    e.quit = [&done](const SDL_QuitEvent &) { done = true; };
+    e.keyDown = [&done](const SDL_KeyboardEvent &e) { done = done | (e.keysym.sym == SDLK_q); };
+    while (!done)
+    {
+      while (e.poll()) {}
+      example.update();
+    }
   }
-
+  bgfx::shutdown();
   return 0;
 }
