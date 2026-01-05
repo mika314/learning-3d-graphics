@@ -23,9 +23,9 @@ namespace
   }();
 } // namespace
 
-static auto vertices = std::array{PosVertex{-.5f, -.5f, 0.0f, 0xff0000ff}, //
-                                  PosVertex{.5f, -.5f, 0.0f, 0xff00ff00}, //
-                                  PosVertex{.0f, .5f, 0.0f, 0xffff0000}};
+static auto vertices = std::array{PosVertex{-.5f, .5f, 0.0f, 0xff0000ff},
+                                  PosVertex{.0f, -.5f, 0.0f, 0xffff0000},
+                                  PosVertex{.5f, .5f, 0.0f, 0xff00ff00}};
 
 static auto triList = std::array<uint16_t, 3>{0, 1, 2};
 
@@ -38,11 +38,13 @@ ShadersTutorial::ShadersTutorial(sdl::Window &aWindow, int aWidth, int aHeight)
   ibh = bgfx::createIndexBuffer(bgfx::makeRef(triList.data(), triList.size() * sizeof(triList[0])));
   bgfx::setViewRect(0, 0, 0, width, height);
   vertexColor = bgfx::createUniform("our_color", bgfx::UniformType::Vec4);
+  offset = bgfx::createUniform("offset", bgfx::UniformType::Vec4);
   program = loadProgram("vs-shaders-tutorial", "fs-shaders-tutorial");
 }
 
 ShadersTutorial::~ShadersTutorial()
 {
+  bgfx::destroy(offset);
   bgfx::destroy(vertexColor);
   bgfx::destroy(ibh);
   bgfx::destroy(vbh);
@@ -60,6 +62,7 @@ auto ShadersTutorial::update() -> void
     const auto timeValue = SDL_GetTicks() / 1000.f;
     const auto greenValue = (sin(timeValue) / 2.0f) + 0.5f;
     bgfx::setUniform(vertexColor, std::array{1.0f, greenValue, 1.0f, 1.0f}.data());
+    bgfx::setUniform(offset, std::array{.0001f * SDL_GetTicks(), 0.0f, 0.0f, 0.0f}.data());
     bgfx::submit(0, program);
   }
 

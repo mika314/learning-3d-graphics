@@ -17,4 +17,5 @@ private:
   bgfx::VertexBufferHandle vbh;
   bgfx::IndexBufferHandle ibh;
   bgfx::UniformHandle vertexColor;
+  bgfx::UniformHandle offset;
 };

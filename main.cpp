@@ -42,7 +42,7 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = ExampleCubes{window, width, height};
+    auto example = ShadersTutorial{window, width, height};
     auto done = false;
     auto e = sdl::EventHandler{};
     e.quit = [&done](const SDL_QuitEvent &) { done = true; };
