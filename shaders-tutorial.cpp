@@ -9,19 +9,23 @@ namespace
     float x;
     float y;
     float z;
+    uint32_t abgr;
     static bgfx::VertexLayout msLayout;
   };
 
   bgfx::VertexLayout PosVertex::msLayout = []() {
     auto r = bgfx::VertexLayout{};
-    r.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float).end();
+    r.begin()
+      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+      .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+      .end();
     return r;
   }();
 } // namespace
 
-static auto vertices = std::array{PosVertex{-.5f, -.5f, 0.0f}, //
-                                  PosVertex{.5f, -.5f, 0.0f},  //
-                                  PosVertex{.0f, .5f, 0.0f}};
+static auto vertices = std::array{PosVertex{-.5f, -.5f, 0.0f, 0xff0000ff}, //
+                                  PosVertex{.5f, -.5f, 0.0f, 0xff00ff00}, //
+                                  PosVertex{.0f, .5f, 0.0f, 0xffff0000}};
 
 static auto triList = std::array<uint16_t, 3>{0, 1, 2};
 
@@ -55,7 +59,7 @@ auto ShadersTutorial::update() -> void
                    BGFX_STATE_MSAA);
     const auto timeValue = SDL_GetTicks() / 1000.f;
     const auto greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-    bgfx::setUniform(vertexColor, std::array{0.0f, greenValue, 0.0f, 1.0f}.data());
+    bgfx::setUniform(vertexColor, std::array{1.0f, greenValue, 1.0f, 1.0f}.data());
     bgfx::submit(0, program);
   }
 
