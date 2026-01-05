@@ -14,6 +14,7 @@ private:
   int width;
   int height;
   bgfx::ProgramHandle program;
-  bgfx::VertexBufferHandle vbh;
+  bgfx::VertexBufferHandle vbh1;
+  bgfx::VertexBufferHandle vbh2;
   bgfx::IndexBufferHandle ibh;
 };
