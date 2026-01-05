@@ -1,4 +1,6 @@
+#include "example-cubes.hpp"
 #include "get-natives.hpp"
+#include "hello-triangle.hpp"
 #include "shaders-tutorial.hpp"
 #include <bgfx/platform.h>
 #include <bx/readerwriter.h>
@@ -40,7 +42,7 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = ShadersTutorial{window, width, height};
+    auto example = ExampleCubes{window, width, height};
     auto done = false;
     auto e = sdl::EventHandler{};
     e.quit = [&done](const SDL_QuitEvent &) { done = true; };

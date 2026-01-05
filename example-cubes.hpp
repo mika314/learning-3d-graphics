@@ -3,13 +3,6 @@
 #include <bx/os.h>
 #include <sdlpp/sdlpp.hpp>
 
-static const char *s_ptNames[]{
-  "Triangle List",
-  "Triangle Strip",
-  "Lines",
-  "Line Strip",
-  "Points",
-};
 static const uint64_t s_ptState[]{
   UINT64_C(0),
   BGFX_STATE_PT_TRISTRIP,
@@ -17,18 +10,15 @@ static const uint64_t s_ptState[]{
   BGFX_STATE_PT_LINESTRIP,
   BGFX_STATE_PT_POINTS,
 };
-static_assert(BX_COUNTOF(s_ptState) == BX_COUNTOF(s_ptNames));
 
 class ExampleCubes
 {
 public:
-  ExampleCubes(sdl::Window &);
-  void init(int32_t _argc, const char *const *_argv, uint32_t _width, uint32_t _height);
-  virtual int shutdown();
+  ExampleCubes(sdl::Window &, int _width, int _height);
+  ~ExampleCubes();
   void update();
-  void *getNativeWindowHandle();
-  void *getNativeDisplayHandle();
 
+private:
   sdl::Window &m_window;
   uint32_t m_width;
   uint32_t m_height;

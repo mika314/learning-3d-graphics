@@ -1,11 +1,43 @@
 #include "example-cubes.hpp"
-#include "pos-color-vertex.hpp"
+#include "get-natives.hpp"
 #include <bx/math.h>
 
 BX_PRAGMA_DIAGNOSTIC_PUSH()
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wextern-c-compat")
 #include <SDL2/SDL_syswm.h>
 BX_PRAGMA_DIAGNOSTIC_POP()
+
+static const char *s_ptNames[]{
+  "Triangle List",
+  "Triangle Strip",
+  "Lines",
+  "Line Strip",
+  "Points",
+};
+
+static_assert(BX_COUNTOF(s_ptState) == BX_COUNTOF(s_ptNames));
+
+namespace
+{
+  struct PosColorVertex
+  {
+    float x;
+    float y;
+    float z;
+    uint32_t abgr;
+
+    static bgfx::VertexLayout ms_layout;
+  };
+
+  bgfx::VertexLayout PosColorVertex::ms_layout = []() {
+    auto r = bgfx::VertexLayout{};
+    r.begin()
+      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+      .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+      .end();
+    return r;
+  }();
+} // namespace
 
 static PosColorVertex s_cubeVertices[] = {
   {-1.0f, 1.0f, 1.0f, 0xff000000},
@@ -70,11 +102,6 @@ static const uint16_t s_cubeLineStrip[] = {
 };
 
 static const uint16_t s_cubePoints[] = {0, 1, 2, 3, 4, 5, 6, 7};
-
-ExampleCubes::ExampleCubes(sdl::Window &w)
-  : m_window(w), m_pt(0), m_r(true), m_g(true), m_b(true), m_a(true)
-{
-}
 
 static const bgfx::Memory *loadMem(const char *_filePath)
 {
@@ -158,35 +185,16 @@ static bgfx::ProgramHandle loadProgram(const char *_vsName, const char *_fsName)
   return bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
 }
 
-void ExampleCubes::init(int32_t _argc, const char *const *_argv, uint32_t _width, uint32_t _height)
+ExampleCubes::ExampleCubes(sdl::Window &w, int _width, int _height)
+  : m_window(w), m_pt(0), m_r(true), m_g(true), m_b(true), m_a(true)
 {
-  // Args args(_argc, _argv);
-
   m_width = _width;
   m_height = _height;
   m_debug = BGFX_DEBUG_NONE;
   m_reset = BGFX_RESET_VSYNC;
 
-  bgfx::Init init;
-  // init.type     = args.m_type;
-  init.type = bgfx::RendererType::OpenGL;
-  // init.type     = bgfx::RendererType::Vulkan;
-  init.vendorId = BGFX_PCI_ID_NONE; // args.m_pciId;
-  init.platformData.nwh = getNativeWindowHandle();
-  init.platformData.ndt = getNativeDisplayHandle();
-  init.resolution.width = m_width;
-  init.resolution.height = m_height;
-  init.resolution.reset = m_reset;
-  bgfx::init(init);
-
-  // Enable debug text.
-  bgfx::setDebug(m_debug);
-
   // Set view 0 clear state.
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
-
-  // Create vertex stream declaration.
-  PosColorVertex::init();
 
   // Create static vertex buffer.
   m_vbh = bgfx::createVertexBuffer(
@@ -225,7 +233,7 @@ void ExampleCubes::init(int32_t _argc, const char *const *_argv, uint32_t _width
   m_timeOffset = SDL_GetTicks(); // SDL_TICKS_PASSED
 }
 
-int ExampleCubes::shutdown()
+ExampleCubes::~ExampleCubes()
 {
   // Cleanup.
   for (uint32_t ii = 0; ii < BX_COUNTOF(m_ibh); ++ii)
@@ -235,11 +243,6 @@ int ExampleCubes::shutdown()
 
   bgfx::destroy(m_vbh);
   bgfx::destroy(m_program);
-
-  // Shutdown bgfx.
-  bgfx::shutdown();
-
-  return 0;
 }
 
 void ExampleCubes::update()
@@ -301,64 +304,4 @@ void ExampleCubes::update()
   // Advance to next frame. Rendering thread will be kicked to
   // process submitted rendering primitives.
   bgfx::frame();
-}
-
-static void *sdlNativeWindowHandle(SDL_Window *_window)
-{
-  SDL_SysWMinfo wmi;
-  SDL_VERSION(&wmi.version);
-  if (!SDL_GetWindowWMInfo(_window, &wmi))
-  {
-    return NULL;
-  }
-
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#if ENTRY_CONFIG_USE_WAYLAND
-  wl_egl_window *win_impl = (wl_egl_window *)SDL_GetWindowData(_window, "wl_egl_window");
-  if (!win_impl)
-  {
-    int width, height;
-    SDL_GetWindowSize(_window, &width, &height);
-    struct wl_surface *surface = wmi.info.wl.surface;
-    if (!surface)
-      return nullptr;
-    win_impl = wl_egl_window_create(surface, width, height);
-    SDL_SetWindowData(_window, "wl_egl_window", win_impl);
-  }
-  return (void *)(uintptr_t)win_impl;
-#else
-  return (void *)wmi.info.x11.window;
-#endif
-#elif BX_PLATFORM_OSX || BX_PLATFORM_IOS
-  return wmi.info.cocoa.window;
-#elif BX_PLATFORM_WINDOWS
-  return wmi.info.win.window;
-#elif BX_PLATFORM_ANDROID
-  return wmi.info.android.window;
-#endif // BX_PLATFORM_
-}
-
-void *ExampleCubes::getNativeWindowHandle()
-{
-  return sdlNativeWindowHandle(m_window.get());
-}
-
-void *ExampleCubes::getNativeDisplayHandle()
-{
-  SDL_SysWMinfo wmi;
-  SDL_VERSION(&wmi.version);
-  if (!SDL_GetWindowWMInfo(m_window.get(), &wmi))
-  {
-    return NULL;
-  }
-
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#if ENTRY_CONFIG_USE_WAYLAND
-  return wmi.info.wl.display;
-#else
-  return wmi.info.x11.display;
-#endif // ENTRY_CONFIG_USE_WAYLAND
-#else
-  return NULL;
-#endif // BX_PLATFORM_*
 }
