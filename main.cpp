@@ -3,6 +3,7 @@
 #include "hello-triangle.hpp"
 #include "shaders-tutorial.hpp"
 #include "textures.hpp"
+#include "transformations.hpp"
 #include <bgfx/platform.h>
 #include <bx/readerwriter.h>
 #include <sdlpp/sdlpp.hpp>
@@ -43,7 +44,7 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = Textures{window, width, height};
+    auto example = Transformations{window, width, height};
     auto done = false;
     auto e = sdl::EventHandler{};
     e.quit = [&done](const SDL_QuitEvent &) { done = true; };
