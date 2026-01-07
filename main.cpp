@@ -1,3 +1,4 @@
+#include "camera.hpp"
 #include "coordinate-system.hpp"
 #include "example-cubes.hpp"
 #include "get-natives.hpp"
@@ -45,15 +46,51 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = CoordinateSystem{window, width, height};
+    auto example = Camera{window, width, height};
     auto done = false;
     auto e = sdl::EventHandler{};
+    auto forward = false;
+    auto backward = false;
+    auto left = false;
+    auto right = false;
+    auto mouseDx = 0.0f;
+    auto mouseDy = 0.0f;
+    auto mouseDown = false;
     e.quit = [&done](const SDL_QuitEvent &) { done = true; };
-    e.keyDown = [&done](const SDL_KeyboardEvent &e) { done = done | (e.keysym.sym == SDLK_q); };
+    e.keyDown = [&](const SDL_KeyboardEvent &e) {
+      switch (e.keysym.sym)
+      {
+      case SDLK_q: done = true; break;
+      case SDLK_w: forward = true; break;
+      case SDLK_s: backward = true; break;
+      case SDLK_a: left = true; break;
+      case SDLK_d: right = true; break;
+      }
+    };
+    e.keyUp = [&](const SDL_KeyboardEvent &e) {
+      switch (e.keysym.sym)
+      {
+      case SDLK_w: forward = false; break;
+      case SDLK_s: backward = false; break;
+      case SDLK_a: left = false; break;
+      case SDLK_d: right = false; break;
+      }
+    };
+    e.mouseMotion = [&](const SDL_MouseMotionEvent &e) {
+      mouseDx = e.xrel * .01f;
+      mouseDy = e.yrel * .01f;
+    };
+    e.mouseButtonDown = [&](const SDL_MouseButtonEvent &e) { mouseDown = true; };
+    e.mouseButtonUp = [&](const SDL_MouseButtonEvent &e) { mouseDown = false; };
     while (!done)
     {
       while (e.poll()) {}
       example.update();
+      example.strafe((forward ? 1 : 0) + (backward ? -1 : 0), (right ? 1 : 0) + (left ? -1 : 0));
+      if (mouseDown)
+        example.look(mouseDx, mouseDy);
+      mouseDx = 0.0f;
+      mouseDy = 0.0f;
     }
   }
   bgfx::shutdown();
