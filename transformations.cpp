@@ -52,7 +52,7 @@ Transformations::Transformations(sdl::Window &aWindow, int aWidth, int aHeight)
   smileTexture = loadTexture("smile.png");
   smileUniform = bgfx::createUniform("smile", bgfx::UniformType::Sampler);
   transUniform = bgfx::createUniform("trans", bgfx::UniformType::Mat4);
-  program = loadProgram("vs-transformations", "fs-transformations");
+  program = loadProgram("transformations-vs", "transformations-fs");
 }
 
 Transformations::~Transformations()

@@ -47,7 +47,7 @@ Textures::Textures(sdl::Window &aWindow, int aWidth, int aHeight)
   bricksUniform = bgfx::createUniform("bricks", bgfx::UniformType::Sampler);
   smileTexture = loadTexture("smile.png");
   smileUniform = bgfx::createUniform("smile", bgfx::UniformType::Sampler);
-  program = loadProgram("vs-textures", "fs-textures");
+  program = loadProgram("textures-vs", "textures-fs");
 }
 
 Textures::~Textures()

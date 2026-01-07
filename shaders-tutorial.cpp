@@ -39,7 +39,7 @@ ShadersTutorial::ShadersTutorial(sdl::Window &aWindow, int aWidth, int aHeight)
   bgfx::setViewRect(0, 0, 0, width, height);
   vertexColor = bgfx::createUniform("our_color", bgfx::UniformType::Vec4);
   offset = bgfx::createUniform("offset", bgfx::UniformType::Vec4);
-  program = loadProgram("vs-shaders-tutorial", "fs-shaders-tutorial");
+  program = loadProgram("shaders-tutorial-vs", "shaders-tutorial-fs");
 }
 
 ShadersTutorial::~ShadersTutorial()

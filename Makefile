@@ -1,9 +1,9 @@
 SHADERC := bgfx/bgfx/.build/linux64_clang/bin/shadercRelease
 BINS_DIR := .bins
-VERTEX_SHADERS := $(wildcard vs-*.sc)
-FRAGMENT_SHADERS := $(wildcard fs-*.sc)
-VERTEX_BINS := $(patsubst vs-%.sc,$(BINS_DIR)/vs-%.bin,$(VERTEX_SHADERS))
-FRAGMENT_BINS := $(patsubst fs-%.sc,$(BINS_DIR)/fs-%.bin,$(FRAGMENT_SHADERS))
+VERTEX_SHADERS := $(wildcard *-vs.sc)
+FRAGMENT_SHADERS := $(wildcard *-fs.sc)
+VERTEX_BINS := $(patsubst %-vs.sc,$(BINS_DIR)/%-vs.bin,$(VERTEX_SHADERS))
+FRAGMENT_BINS := $(patsubst %-fs.sc,$(BINS_DIR)/%-fs.bin,$(FRAGMENT_SHADERS))
 
 all: FORCE $(SHADERC) $(VERTEX_BINS) $(FRAGMENT_BINS)
 	coddle
@@ -17,10 +17,10 @@ $(SHADERC):
 
 shaders: $(VERTEX_BINS) $(FRAGMENT_BINS)
 
-$(BINS_DIR)/vs-%.bin: vs-%.sc varying.def.sc | $(BINS_DIR)
+$(BINS_DIR)/%-vs.bin: %-vs.sc varying.def.sc | $(BINS_DIR)
 	$(SHADERC) -f $< -o $@ --type vertex --platform linux --profile 430 --varyingdef varying.def.sc
 
-$(BINS_DIR)/fs-%.bin: fs-%.sc varying.def.sc | $(BINS_DIR)
+$(BINS_DIR)/%-fs.bin: %-fs.sc varying.def.sc | $(BINS_DIR)
 	$(SHADERC) -f $< -o $@ --type fragment --platform linux --profile 430 --varyingdef varying.def.sc
 
 $(BINS_DIR):

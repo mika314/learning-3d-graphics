@@ -1,3 +1,4 @@
+#include "coordinate-system.hpp"
 #include "example-cubes.hpp"
 #include "get-natives.hpp"
 #include "hello-triangle.hpp"
@@ -44,7 +45,7 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = Transformations{window, width, height};
+    auto example = CoordinateSystem{window, width, height};
     auto done = false;
     auto e = sdl::EventHandler{};
     e.quit = [&done](const SDL_QuitEvent &) { done = true; };

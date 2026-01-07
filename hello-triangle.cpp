@@ -34,7 +34,7 @@ HelloTriangle::HelloTriangle(sdl::Window &aWindow, int aWidth, int aHeight)
   : window(aWindow), width(aWidth), height(aHeight)
 {
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
-  program = loadProgram("vs-hello-triangle", "fs-hello-triangle");
+  program = loadProgram("hello-triangle-vs", "hello-triangle-fs");
   vbh1 = bgfx::createVertexBuffer(
     bgfx::makeRef(vertices1.data(), vertices1.size() * sizeof(vertices1[0])), PosVertex::msLayout);
   vbh2 = bgfx::createVertexBuffer(
