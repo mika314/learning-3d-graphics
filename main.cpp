@@ -1,3 +1,4 @@
+#include "basic-lighting.hpp"
 #include "camera.hpp"
 #include "colors.hpp"
 #include "coordinate-system.hpp"
@@ -47,7 +48,7 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = Colors{window, width, height};
+    auto example = BasicLighting{window, width, height};
     auto done = false;
     auto e = sdl::EventHandler{};
     auto forward = false;
