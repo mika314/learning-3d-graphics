@@ -1,4 +1,5 @@
 #include "camera.hpp"
+#include "colors.hpp"
 #include "coordinate-system.hpp"
 #include "example-cubes.hpp"
 #include "get-natives.hpp"
@@ -46,7 +47,7 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = Camera{window, width, height};
+    auto example = Colors{window, width, height};
     auto done = false;
     auto e = sdl::EventHandler{};
     auto forward = false;
