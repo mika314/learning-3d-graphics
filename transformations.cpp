@@ -89,3 +89,5 @@ auto Transformations::update() -> void
 
   bgfx::frame();
 }
+
+REG(Transformations, "trans");

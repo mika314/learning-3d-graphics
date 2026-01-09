@@ -1,16 +1,17 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <glm/glm.hpp>
 #include <sdlpp/sdlpp.hpp>
 
-class Camera
+class Camera final : public BaseExample
 {
 public:
   Camera(sdl::Window &, int width, int height);
-  auto update() -> void;
+  auto update() -> void final;
   auto strafe(float forward, float right) -> void;
   auto look(float dx, float dy) -> void;
-  ~Camera();
+  ~Camera() final;
 
 private:
   sdl::Window &window;

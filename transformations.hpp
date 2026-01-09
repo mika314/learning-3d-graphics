@@ -1,13 +1,14 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <sdlpp/sdlpp.hpp>
 
-class Transformations
+class Transformations final : public BaseExample
 {
 public:
   Transformations(sdl::Window &, int width, int height);
-  auto update() -> void;
-  ~Transformations();
+  auto update() -> void final;
+  ~Transformations() final;
 
 private:
   sdl::Window &window;

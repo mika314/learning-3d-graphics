@@ -1,13 +1,14 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <sdlpp/sdlpp.hpp>
 
-class CoordinateSystem
+class CoordinateSystem final : public BaseExample
 {
 public:
   CoordinateSystem(sdl::Window &, int width, int height);
-  auto update() -> void;
-  ~CoordinateSystem();
+  auto update() -> void final;
+  ~CoordinateSystem() final;
 
 private:
   sdl::Window &window;

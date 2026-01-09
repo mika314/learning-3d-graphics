@@ -149,3 +149,5 @@ auto CoordinateSystem::update() -> void
 
   bgfx::frame();
 }
+
+REG(CoordinateSystem, "coord");

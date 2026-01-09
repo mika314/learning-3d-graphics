@@ -1,13 +1,14 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <sdlpp/sdlpp.hpp>
 
-class HelloTriangle
+class HelloTriangle final : public BaseExample
 {
 public:
   HelloTriangle(sdl::Window &, int width, int height);
-  auto update() -> void;
-  ~HelloTriangle();
+  auto update() -> void final;
+  ~HelloTriangle() final;
 
 private:
   sdl::Window &window;

@@ -221,3 +221,5 @@ auto BasicLighting::look(float dx, float dy) -> void
   camPitch =
     std::min(static_cast<float>(M_PI / 2.f), std::max(static_cast<float>(-M_PI / 2.f), camPitch));
 }
+
+REG(BasicLighting, "light");

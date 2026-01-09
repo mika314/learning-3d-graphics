@@ -1,16 +1,17 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <glm/glm.hpp>
 #include <sdlpp/sdlpp.hpp>
 
-class BasicLighting
+class BasicLighting final : public BaseExample
 {
 public:
   BasicLighting(sdl::Window &, int width, int height);
-  auto update() -> void;
-  auto strafe(float forward, float right) -> void;
-  auto look(float dx, float dy) -> void;
-  ~BasicLighting();
+  auto update() -> void final;
+  auto strafe(float forward, float right) -> void final;
+  auto look(float dx, float dy) -> void final;
+  ~BasicLighting() final;
 
 private:
   sdl::Window &window;

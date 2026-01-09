@@ -1,16 +1,17 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <glm/glm.hpp>
 #include <sdlpp/sdlpp.hpp>
 
-class Colors
+class Colors final : public BaseExample
 {
 public:
   Colors(sdl::Window &, int width, int height);
-  auto update() -> void;
-  auto strafe(float forward, float right) -> void;
-  auto look(float dx, float dy) -> void;
-  ~Colors();
+  auto update() -> void final;
+  auto strafe(float forward, float right) -> void final;
+  auto look(float dx, float dy) -> void final;
+  ~Colors() final;
 
 private:
   sdl::Window &window;

@@ -78,3 +78,5 @@ auto Textures::update() -> void
 
   bgfx::frame();
 }
+
+REG(Textures, "tex");

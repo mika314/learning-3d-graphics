@@ -305,3 +305,5 @@ void ExampleCubes::update()
   // process submitted rendering primitives.
   bgfx::frame();
 }
+
+REG(ExampleCubes, "cubes");

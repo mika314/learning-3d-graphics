@@ -1,13 +1,14 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <sdlpp/sdlpp.hpp>
 
-class ShadersTutorial
+class ShadersTutorial final : public BaseExample
 {
 public:
   ShadersTutorial(sdl::Window &, int width, int height);
-  auto update() -> void;
-  ~ShadersTutorial();
+  auto update() -> void final;
+  ~ShadersTutorial() final;
 
 private:
   sdl::Window &window;

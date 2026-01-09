@@ -1,4 +1,5 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <bx/os.h>
 #include <sdlpp/sdlpp.hpp>
@@ -11,12 +12,12 @@ static const uint64_t s_ptState[]{
   BGFX_STATE_PT_POINTS,
 };
 
-class ExampleCubes
+class ExampleCubes final : public BaseExample
 {
 public:
   ExampleCubes(sdl::Window &, int _width, int _height);
-  ~ExampleCubes();
-  void update();
+  ~ExampleCubes() final;
+  void update() final;
 
 private:
   sdl::Window &m_window;

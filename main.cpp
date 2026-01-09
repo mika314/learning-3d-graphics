@@ -10,6 +10,7 @@
 #include "transformations.hpp"
 #include <bgfx/platform.h>
 #include <bx/readerwriter.h>
+#include <iostream>
 #include <sdlpp/sdlpp.hpp>
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
@@ -24,8 +25,16 @@
 #undef None
 #endif // defined(None)
 
-auto main(int /*argc*/, char ** /*argv*/) -> int
+auto main(int argc, char **argv) -> int
 {
+
+  if (argc >= 2 && argv[1] == std::string("-h"))
+  {
+    for (const auto &e : BaseExample::getExamples())
+      std::cout << e << std::endl;
+    return 0;
+  }
+
   auto init = sdl::Init(SDL_INIT_VIDEO);
   int width = 1280;
   int height = 720;
@@ -48,7 +57,11 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
   }());
   bgfx::setDebug(BGFX_DEBUG_NONE);
   {
-    auto example = BasicLighting{window, width, height};
+    auto example = [&]() -> std::unique_ptr<BaseExample> {
+      if (argc <= 1)
+        return std::make_unique<ExampleCubes>(window, width, height);
+      return BaseExample::ctor(argv[1], window, width, height);
+    }();
     auto done = false;
     auto e = sdl::EventHandler{};
     auto forward = false;
@@ -82,15 +95,15 @@ auto main(int /*argc*/, char ** /*argv*/) -> int
       mouseDx = e.xrel * .01f;
       mouseDy = e.yrel * .01f;
     };
-    e.mouseButtonDown = [&](const SDL_MouseButtonEvent &e) { mouseDown = true; };
-    e.mouseButtonUp = [&](const SDL_MouseButtonEvent &e) { mouseDown = false; };
+    e.mouseButtonDown = [&](const SDL_MouseButtonEvent &) { mouseDown = true; };
+    e.mouseButtonUp = [&](const SDL_MouseButtonEvent &) { mouseDown = false; };
     while (!done)
     {
       while (e.poll()) {}
-      example.update();
-      example.strafe((forward ? 1 : 0) + (backward ? -1 : 0), (right ? 1 : 0) + (left ? -1 : 0));
+      example->update();
+      example->strafe((forward ? 1 : 0) + (backward ? -1 : 0), (right ? 1 : 0) + (left ? -1 : 0));
       if (mouseDown)
-        example.look(mouseDx, mouseDy);
+        example->look(mouseDx, mouseDy);
       mouseDx = 0.0f;
       mouseDy = 0.0f;
     }

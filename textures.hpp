@@ -1,13 +1,14 @@
 #pragma once
+#include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <sdlpp/sdlpp.hpp>
 
-class Textures
+class Textures final : public BaseExample
 {
 public:
   Textures(sdl::Window &, int width, int height);
-  auto update() -> void;
-  ~Textures();
+  auto update() -> void final;
+  ~Textures() final;
 
 private:
   sdl::Window &window;

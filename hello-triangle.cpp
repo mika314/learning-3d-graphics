@@ -72,3 +72,5 @@ auto HelloTriangle::update() -> void
 
   bgfx::frame();
 }
+
+REG(HelloTriangle, "tri");

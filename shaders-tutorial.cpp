@@ -68,3 +68,5 @@ auto ShadersTutorial::update() -> void
 
   bgfx::frame();
 }
+
+REG(ShadersTutorial, "shaders");
