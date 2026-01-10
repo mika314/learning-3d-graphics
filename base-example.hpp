@@ -17,6 +17,7 @@ public:
   template <typename T>
   static auto reg(const std::string &name) -> void
   {
+    auto &examples = getExamplesMap();
     examples[name] = [](sdl::Window &w, int width, int height) {
       return std::make_unique<T>(w, width, height);
     };
@@ -25,22 +26,22 @@ public:
   static auto ctor(const std::string &name, sdl::Window &w, int width, int height)
     -> std::unique_ptr<BaseExample>
   {
-    return examples[name](w, width, height);
+    return getExamplesMap()[name](w, width, height);
   }
 
   static auto getExamples() -> std::vector<std::string>
   {
     auto ret = std::vector<std::string>{};
+    auto &examples = getExamplesMap();
     for (const auto &e : examples)
       ret.push_back(e.first);
     return ret;
   }
 
 private:
-  static std::unordered_map<
+  static auto getExamplesMap() -> std::unordered_map<
     std::string,
-    std::function<auto(sdl::Window &, int width, int height)->std::unique_ptr<BaseExample>>>
-    examples;
+    std::function<auto(sdl::Window &, int width, int height)->std::unique_ptr<BaseExample>>> &;
 };
 
 template <typename T>
