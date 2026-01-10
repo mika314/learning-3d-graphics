@@ -18,10 +18,10 @@ $(SHADERC):
 shaders: $(VERTEX_BINS) $(FRAGMENT_BINS)
 
 $(BINS_DIR)/%-vs.bin: %-vs.sc varying.def.sc | $(BINS_DIR)
-	$(SHADERC) -f $< -o $@ --type vertex --platform linux --profile 430 --varyingdef varying.def.sc
+	$(SHADERC) -i bgfx/bgfx/src -f $< -o $@ --type vertex --platform linux --profile 430 --varyingdef varying.def.sc
 
 $(BINS_DIR)/%-fs.bin: %-fs.sc varying.def.sc | $(BINS_DIR)
-	$(SHADERC) -f $< -o $@ --type fragment --platform linux --profile 430 --varyingdef varying.def.sc
+	$(SHADERC) -i bgfx/bgfx/src -f $< -o $@ --type fragment --platform linux --profile 430 --varyingdef varying.def.sc
 
 $(BINS_DIR):
 	mkdir -p $(BINS_DIR)
