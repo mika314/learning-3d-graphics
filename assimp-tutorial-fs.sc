@@ -29,4 +29,5 @@ void main()
 
   vec4 result = ambient + diffuse + specular;
   gl_FragColor = result;
+  // gl_FragColor = vec4(1.f, 1.f, 1.f, 1.f);
 }

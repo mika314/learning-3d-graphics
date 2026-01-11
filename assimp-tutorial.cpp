@@ -48,9 +48,22 @@ namespace
       : vertices(vertices), indices(indices), textures(textures)
     {
       setupMesh();
+      isInitialized = true;
+    }
+    Mesh(const Mesh &) = delete;
+    Mesh(Mesh &&mesh)
+      : vertices(std::move(mesh.vertices)),
+        indices(std::move(mesh.indices)),
+        textures(std::move(mesh.textures)),
+        vbh(mesh.vbh),
+        ibh(mesh.ibh)
+    {
+      mesh.isInitialized = false;
     }
     ~Mesh()
     {
+      if (!isInitialized)
+        return;
       bgfx::destroy(ibh);
       bgfx::destroy(vbh);
     }
@@ -58,10 +71,12 @@ namespace
     {
       bgfx::setIndexBuffer(ibh);
       bgfx::setVertexBuffer(0, vbh);
+      bgfx::submit(0, shader);
     }
 
   private:
     // render data
+    bool isInitialized;
     bgfx::VertexBufferHandle vbh;
     bgfx::IndexBufferHandle ibh;
     void setupMesh()
@@ -75,7 +90,7 @@ namespace
   class Model
   {
   public:
-    Model(char *path) { loadModel(path); }
+    Model(const char *path) { loadModel(path); }
     void Draw(bgfx::ProgramHandle &shader)
     {
       for (unsigned int i = 0; i < meshes.size(); i++)
@@ -117,14 +132,15 @@ namespace
       std::vector<uint16_t> indices;
       std::vector<Texture> textures;
       for (auto i = 0U; i < mesh->mNumVertices; ++i)
+      {
         vertices.push_back(
           Vertex{.Position = glm::vec3{mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z},
                  .Normal = glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z},
                  .TexCoords = mesh->mTextureCoords[0]
                                 ? glm::vec2{mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y}
                                 : glm::vec2{}});
+      }
 
-      // process indices
       for (auto i = 0U; i < mesh->mNumFaces; ++i)
       {
         aiFace face = mesh->mFaces[i];
@@ -168,10 +184,76 @@ namespace
 
 } // namespace
 
+namespace
+{
+  struct PosVertex
+  {
+    float x;
+    float y;
+    float z;
+    float nx;
+    float ny;
+    float nz;
+    float u;
+    float v;
+  };
+} // namespace
+
+static auto vertices = std::array{
+  PosVertex{-0.5f, +0.5f, +0.5f, 0.0f, 0.0f, 1.f, 0.0f, 0.0f},
+  PosVertex{+0.5f, +0.5f, +0.5f, 0.0f, 0.0f, 1.f, 1.0f, 0.0f},
+  PosVertex{+0.5f, -0.5f, +0.5f, 0.0f, 0.0f, 1.f, 1.0f, 1.0f},
+  PosVertex{-0.5f, -0.5f, +0.5f, 0.0f, 0.0f, 1.f, 0.0f, 1.0f},
+
+  PosVertex{-0.5f, -0.5f, +0.5f, 0.0f, -1.f, 0.0f, 0.0f, 0.0f},
+  PosVertex{+0.5f, -0.5f, +0.5f, 0.0f, -1.f, 0.0f, 1.0f, 0.0f},
+  PosVertex{+0.5f, -0.5f, -0.5f, 0.0f, -1.f, 0.0f, 1.0f, 1.0f},
+  PosVertex{-0.5f, -0.5f, -0.5f, 0.0f, -1.f, 0.0f, 0.0f, 1.0f},
+
+  PosVertex{-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.f, 0.0f, 0.0f},
+  PosVertex{+0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.f, 1.0f, 0.0f},
+  PosVertex{+0.5f, +0.5f, -0.5f, 0.0f, 0.0f, -1.f, 1.0f, 1.0f},
+  PosVertex{-0.5f, +0.5f, -0.5f, 0.0f, 0.0f, -1.f, 0.0f, 1.0f},
+
+  PosVertex{+0.5f, +0.5f, +0.5f, 0.0f, 1.f, 0.0f, 0.0f, 0.0f},
+  PosVertex{-0.5f, +0.5f, +0.5f, 0.0f, 1.f, 0.0f, 1.0f, 0.0f},
+  PosVertex{-0.5f, +0.5f, -0.5f, 0.0f, 1.f, 0.0f, 1.0f, 1.0f},
+  PosVertex{+0.5f, +0.5f, -0.5f, 0.0f, 1.f, 0.0f, 0.0f, 1.0f},
+
+  PosVertex{-0.5f, +0.5f, +0.5f, -1.f, 0.0f, 0.0f, 0.0f, 0.0f},
+  PosVertex{-0.5f, -0.5f, +0.5f, -1.f, 0.0f, 0.0f, 1.0f, 0.0f},
+  PosVertex{-0.5f, -0.5f, -0.5f, -1.f, 0.0f, 0.0f, 1.0f, 1.0f},
+  PosVertex{-0.5f, +0.5f, -0.5f, -1.f, 0.0f, 0.0f, 0.0f, 1.0f},
+
+  PosVertex{+0.5f, -0.5f, +0.5f, 1.f, 0.0f, 0.0f, 0.0f, 0.0f},
+  PosVertex{+0.5f, +0.5f, +0.5f, 1.f, 0.0f, 0.0f, 1.0f, 0.0f},
+  PosVertex{+0.5f, +0.5f, -0.5f, 1.f, 0.0f, 0.0f, 1.0f, 1.0f},
+  PosVertex{+0.5f, -0.5f, -0.5f, 1.f, 0.0f, 0.0f, 0.0f, 1.0f},
+
+};
+
+static auto triList = std::array<uint16_t, 6 * 6>{
+  0 + 4 * 0, 1 + 4 * 0, 2 + 4 * 0, 0 + 4 * 0, 2 + 4 * 0,
+  3 + 4 * 0, //
+  0 + 4 * 1, 1 + 4 * 1, 2 + 4 * 1, 0 + 4 * 1, 2 + 4 * 1,
+  3 + 4 * 1, //
+  0 + 4 * 2, 1 + 4 * 2, 2 + 4 * 2, 0 + 4 * 2, 2 + 4 * 2,
+  3 + 4 * 2, //
+  0 + 4 * 3, 1 + 4 * 3, 2 + 4 * 3, 0 + 4 * 3, 2 + 4 * 3,
+  3 + 4 * 3, //
+  0 + 4 * 4, 1 + 4 * 4, 2 + 4 * 4, 0 + 4 * 4, 2 + 4 * 4,
+  3 + 4 * 4, //
+  0 + 4 * 5, 1 + 4 * 5, 2 + 4 * 5, 0 + 4 * 5, 2 + 4 * 5,
+  3 + 4 * 5, //
+};
+
 AssimpTutotrial::AssimpTutotrial(sdl::Window &aWindow, int aWidth, int aHeight)
-  : window(aWindow), width(aWidth), height(aHeight)
+  : window(aWindow), width(aWidth), height(aHeight), model(std::make_unique<Model>("test-model.glb"))
 {
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f, 0);
+  vbh = bgfx::createVertexBuffer(bgfx::makeRef(vertices.data(), vertices.size() * sizeof(vertices[0])),
+                                 Vertex::msLayout);
+  ibh = bgfx::createIndexBuffer(bgfx::makeRef(triList.data(), triList.size() * sizeof(triList[0])));
   bgfx::setViewRect(0, 0, 0, width, height);
   woodenContainerTexture = loadTexture("wooden-container.png");
   woodenContainerSpecularTexture = loadTexture("wooden-container-specular.png");
@@ -186,8 +268,8 @@ AssimpTutotrial::AssimpTutotrial(sdl::Window &aWindow, int aWidth, int aHeight)
   lightDiffuse = bgfx::createUniform("lightDiffuse", bgfx::UniformType::Vec4);
   lightSpecular = bgfx::createUniform("lightSpecular", bgfx::UniformType::Vec4);
 
-  program = loadProgram("assimp-vs", "assimp-fs");
-  programLight = loadProgram("assimp-vs", "assimp-light-fs");
+  program = loadProgram("assimp-tutorial-vs", "assimp-tutorial-fs");
+  programLight = loadProgram("assimp-tutorial-vs", "assimp-tutorial-light-fs");
 }
 
 AssimpTutotrial::~AssimpTutotrial()
@@ -228,27 +310,29 @@ auto AssimpTutotrial::update() -> void
                                   glm::vec4{3.f, 0.0f, -2.0f, 1.f}};
 
   auto i = 0;
-  for (auto cubePosition : std::array{glm::vec3(0.0f, 0.0f, 0.0f),
-                                      glm::vec3(2.0f, 5.0f, -15.0f),
-                                      glm::vec3(-1.5f, -2.2f, -2.5f),
-                                      glm::vec3(-3.8f, -2.0f, -12.3f),
-                                      glm::vec3(2.4f, -0.4f, -3.5f),
-                                      glm::vec3(-1.7f, 3.0f, -7.5f),
-                                      glm::vec3(1.3f, -2.0f, -2.5f),
-                                      glm::vec3(1.5f, 2.0f, -2.5f),
-                                      glm::vec3(1.5f, 0.2f, -1.5f),
-                                      glm::vec3(-1.3f, 1.0f, -1.5f)})
+  for (auto cubePosition : std::array{
+         glm::vec3(0.0f, 0.0f, 0.0f),
+         // glm::vec3(2.0f, 5.0f, -15.0f),
+         // glm::vec3(-1.5f, -2.2f, -2.5f),
+         // glm::vec3(-3.8f, -2.0f, -12.3f),
+         // glm::vec3(2.4f, -0.4f, -3.5f),
+         // glm::vec3(-1.7f, 3.0f, -7.5f),
+         // glm::vec3(1.3f, -2.0f, -2.5f),
+         // glm::vec3(1.5f, 2.0f, -2.5f),
+         // glm::vec3(1.5f, 0.2f, -1.5f),
+         // glm::vec3(-1.3f, 1.0f, -1.5f)
+       })
 
   {
-    auto model = glm::mat4(1.0f);
-    model = glm::translate(model, cubePosition);
+    auto modelMat = glm::mat4(1.0f);
+    modelMat = glm::translate(modelMat, cubePosition);
     float angle = 20.0f * i++;
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+    modelMat = glm::rotate(modelMat, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
-    model = glm::rotate(model, glm::radians(-20 * secs), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(-5 * secs), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMat = glm::rotate(modelMat, glm::radians(-20 * secs), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMat = glm::rotate(modelMat, glm::radians(-5 * secs), glm::vec3(1.0f, 0.0f, 0.0f));
 
-    bgfx::setTransform(&model);
+    bgfx::setTransform(&modelMat);
 
     bgfx::setState(BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | BGFX_STATE_WRITE_A |
                    BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | /*BGFX_STATE_CULL_CCW |*/
@@ -270,8 +354,70 @@ auto AssimpTutotrial::update() -> void
     bgfx::setUniform(materialShininess, std::array{64.f, 0.0f, 0.0f, 0.0f}.data());
     bgfx::setUniform(viewPosUniform, &camPos);
 
-    bgfx::submit(0, program);
+    model->Draw(program);
   }
+
+  {
+    auto model = glm::mat4(1.0f);
+    model = glm::translate(model, lightPos);
+    model = glm::scale(model, glm::vec3(0.2f));
+    bgfx::setTransform(&model);
+
+    bgfx::setIndexBuffer(ibh);
+    bgfx::setVertexBuffer(0, vbh);
+    bgfx::setState(BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | BGFX_STATE_WRITE_A |
+                   BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | /*BGFX_STATE_CULL_CCW |*/
+                   BGFX_STATE_MSAA);
+
+    bgfx::submit(0, programLight);
+  }
+
+  //  auto i = 0;
+  //  for (auto cubePosition : std::array{glm::vec3(0.0f, 0.0f, 0.0f),
+  //                                      glm::vec3(2.0f, 5.0f, -15.0f),
+  //                                      glm::vec3(-1.5f, -2.2f, -2.5f),
+  //                                      glm::vec3(-3.8f, -2.0f, -12.3f),
+  //                                      glm::vec3(2.4f, -0.4f, -3.5f),
+  //                                      glm::vec3(-1.7f, 3.0f, -7.5f),
+  //                                      glm::vec3(1.3f, -2.0f, -2.5f),
+  //                                      glm::vec3(1.5f, 2.0f, -2.5f),
+  //                                      glm::vec3(1.5f, 0.2f, -1.5f),
+  //                                      glm::vec3(-1.3f, 1.0f, -1.5f)})
+  //
+  //  {
+  //    auto model = glm::mat4(1.0f);
+  //    model = glm::translate(model, cubePosition);
+  //    float angle = 20.0f * i++;
+  //    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+  //
+  //    model = glm::rotate(model, glm::radians(-20 * secs), glm::vec3(0.0f, 1.0f, 0.0f));
+  //    model = glm::rotate(model, glm::radians(-5 * secs), glm::vec3(1.0f, 0.0f, 0.0f));
+  //
+  //    bgfx::setTransform(&model);
+  //
+  //    bgfx::setState(BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | BGFX_STATE_WRITE_A
+  //    |
+  //                   BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | /*BGFX_STATE_CULL_CCW |*/
+  //                   BGFX_STATE_MSAA);
+  //    bgfx::setTexture(0, materialDiffuse, woodenContainerTexture);
+  //    bgfx::setTexture(1, materialSpecular, woodenContainerSpecularTexture);
+  //
+  //    glm::mat4 trans = glm::mat4(1.0f);
+  //    trans = glm::rotate(trans, glm::radians(50.f * secs), glm::vec3(0.0, 0.0, 1.0));
+  //    trans = glm::scale(trans, glm::vec3(1., 1080. / 1920., 1.));
+  //    bgfx::setUniform(transUniform, &trans);
+  //    bgfx::setUniform(lightPositionUniform, &lightPos);
+  //    glm::vec3 diffuseColor = glm::vec3(1.0f);
+  //    glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+  //    bgfx::setUniform(lightAmbient, &ambientColor);
+  //    bgfx::setUniform(lightDiffuse, &diffuseColor);
+  //    bgfx::setUniform(lightSpecular, std::array{1.f, 1.f, 1.f, 0.0f}.data());
+  //    bgfx::setUniform(materialAmbient, std::array{1.f, .5f, .31f, 0.0f}.data());
+  //    bgfx::setUniform(materialShininess, std::array{64.f, 0.0f, 0.0f, 0.0f}.data());
+  //    bgfx::setUniform(viewPosUniform, &camPos);
+  //
+  //    bgfx::submit(0, program);
+  //  }
 
   bgfx::frame();
 }

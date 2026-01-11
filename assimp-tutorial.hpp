@@ -2,7 +2,13 @@
 #include "base-example.hpp"
 #include <bgfx/platform.h>
 #include <glm/glm.hpp>
+#include <memory>
 #include <sdlpp/sdlpp.hpp>
+
+namespace
+{
+  class Model;
+}
 
 class AssimpTutotrial final : public BaseExample
 {
@@ -19,6 +25,8 @@ private:
   int height;
   bgfx::ProgramHandle program;
   bgfx::ProgramHandle programLight;
+  bgfx::VertexBufferHandle vbh;
+  bgfx::IndexBufferHandle ibh;
   bgfx::TextureHandle woodenContainerTexture;
   bgfx::TextureHandle woodenContainerSpecularTexture;
   bgfx::UniformHandle transUniform;
@@ -35,4 +43,5 @@ private:
   float camYaw = 0.0f;
   float camPitch = 0.0f;
   bgfx::UniformHandle viewPosUniform;
+  std::unique_ptr<Model> model;
 };

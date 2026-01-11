@@ -6,7 +6,7 @@ VERTEX_BINS := $(patsubst %-vs.sc,$(BINS_DIR)/%-vs.bin,$(VERTEX_SHADERS))
 FRAGMENT_BINS := $(patsubst %-fs.sc,$(BINS_DIR)/%-fs.bin,$(FRAGMENT_SHADERS))
 
 all: FORCE $(SHADERC) $(VERTEX_BINS) $(FRAGMENT_BINS)
-	coddle
+	coddle debug
 
 $(SHADERC):
 	@echo "Building bgfx (one-time setup)..."
