@@ -33,7 +33,7 @@ namespace
 
   struct Texture
   {
-    bgfx::TextureHandle id;
+    bgfx::TextureHandle id; // TODO: Make this handle not leak
     std::string type;
     std::string path;
   };
@@ -67,8 +67,16 @@ namespace
       bgfx::destroy(ibh);
       bgfx::destroy(vbh);
     }
-    void Draw(bgfx::ProgramHandle &shader)
+    void Draw(bgfx::ProgramHandle &shader,
+              bgfx::UniformHandle &materialDiffuse,
+              bgfx::UniformHandle &materialSpecular)
     {
+      auto texId = 0;
+      for (const auto &texture : textures)
+      {
+        bgfx::setTexture(
+          texId++, texture.type == "texture_diffuse" ? materialDiffuse : materialSpecular, texture.id);
+      }
       bgfx::setIndexBuffer(ibh);
       bgfx::setVertexBuffer(0, vbh);
       bgfx::submit(0, shader);
@@ -91,10 +99,12 @@ namespace
   {
   public:
     Model(const char *path) { loadModel(path); }
-    void Draw(bgfx::ProgramHandle &shader)
+    void Draw(bgfx::ProgramHandle &shader,
+              bgfx::UniformHandle &materialDiffuse,
+              bgfx::UniformHandle &materialSpecular)
     {
       for (unsigned int i = 0; i < meshes.size(); i++)
-        meshes[i].Draw(shader);
+        meshes[i].Draw(shader, materialDiffuse, materialSpecular);
     }
 
   private:
@@ -173,6 +183,7 @@ namespace
         aiString str;
         mat->GetTexture(type, i, &str);
         Texture texture;
+        LOG("loading texture", str.C_Str());
         texture.id = loadTexture(str.C_Str());
         texture.type = typeName;
         texture.path = str.C_Str();
@@ -248,15 +259,13 @@ static auto triList = std::array<uint16_t, 6 * 6>{
 };
 
 AssimpTutotrial::AssimpTutotrial(sdl::Window &aWindow, int aWidth, int aHeight)
-  : window(aWindow), width(aWidth), height(aHeight), model(std::make_unique<Model>("test-model.glb"))
+  : window(aWindow), width(aWidth), height(aHeight), model(std::make_unique<Model>("test-model.fbx"))
 {
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f, 0);
   vbh = bgfx::createVertexBuffer(bgfx::makeRef(vertices.data(), vertices.size() * sizeof(vertices[0])),
                                  Vertex::msLayout);
   ibh = bgfx::createIndexBuffer(bgfx::makeRef(triList.data(), triList.size() * sizeof(triList[0])));
   bgfx::setViewRect(0, 0, 0, width, height);
-  woodenContainerTexture = loadTexture("wooden-container.png");
-  woodenContainerSpecularTexture = loadTexture("wooden-container-specular.png");
   materialDiffuse = bgfx::createUniform("materialDiffuse", bgfx::UniformType::Sampler);
   transUniform = bgfx::createUniform("trans", bgfx::UniformType::Mat4);
   viewPosUniform = bgfx::createUniform("viewPos", bgfx::UniformType::Vec4);
@@ -286,8 +295,6 @@ AssimpTutotrial::~AssimpTutotrial()
   bgfx::destroy(materialDiffuse);
   bgfx::destroy(materialAmbient);
   bgfx::destroy(viewPosUniform);
-  bgfx::destroy(woodenContainerSpecularTexture);
-  bgfx::destroy(woodenContainerTexture);
 }
 
 auto AssimpTutotrial::update() -> void
@@ -337,8 +344,6 @@ auto AssimpTutotrial::update() -> void
     bgfx::setState(BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | BGFX_STATE_WRITE_A |
                    BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | /*BGFX_STATE_CULL_CCW |*/
                    BGFX_STATE_MSAA);
-    bgfx::setTexture(0, materialDiffuse, woodenContainerTexture);
-    bgfx::setTexture(1, materialSpecular, woodenContainerSpecularTexture);
 
     glm::mat4 trans = glm::mat4(1.0f);
     trans = glm::rotate(trans, glm::radians(50.f * secs), glm::vec3(0.0, 0.0, 1.0));
@@ -354,7 +359,7 @@ auto AssimpTutotrial::update() -> void
     bgfx::setUniform(materialShininess, std::array{64.f, 0.0f, 0.0f, 0.0f}.data());
     bgfx::setUniform(viewPosUniform, &camPos);
 
-    model->Draw(program);
+    model->Draw(program, materialDiffuse, materialSpecular);
   }
 
   {

@@ -27,8 +27,6 @@ private:
   bgfx::ProgramHandle programLight;
   bgfx::VertexBufferHandle vbh;
   bgfx::IndexBufferHandle ibh;
-  bgfx::TextureHandle woodenContainerTexture;
-  bgfx::TextureHandle woodenContainerSpecularTexture;
   bgfx::UniformHandle transUniform;
   bgfx::UniformHandle lightPositionUniform;
   bgfx::UniformHandle lightAmbient;
